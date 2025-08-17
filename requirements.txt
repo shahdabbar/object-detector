@@ -1,0 +1,11 @@
+flask==2.3.3
+gunicorn==21.2.0
+# YOLOv11 pre-release
+git+https://github.com/ultralytics/ultralytics.git#egg=ultralytics
+# Use official CPU wheels for smaller image & fewer CUDA headaches
+torch==2.3.1
+torchvision==0.18.1
+# core utils
+numpy==1.26.4
+pillow==10.3.0
+opencv-python-headless==4.10.0.84

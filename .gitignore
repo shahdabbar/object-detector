@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+flask_env/
+
+# Logs
+*.log
+
+# Docker
+*.pid

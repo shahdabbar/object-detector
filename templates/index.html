@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Object Detector</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        max-width: 880px;
+        margin: 2rem auto;
+      }
+      .row {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      .card {
+        padding: 1rem;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+      th {
+        background: #fafafa;
+      }
+      .muted {
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Car - Butterfly Object Detector</h1>
+    <p class="muted">
+      Upload an image to detect objects. The result will show an annotated image
+      and a table of detections.
+    </p>
+
+    <div class="row">
+      <div class="card" style="flex: 1">
+        <form id="frm">
+          <input type="file" name="image" accept="image/*" required />
+          <button type="submit">Detect</button>
+        </form>
+        <p id="status" class="muted"></p>
+        <img
+          id="preview"
+          src=""
+          alt=""
+          style="display: none; margin-top: 1rem"
+        />
+      </div>
+
+      <div class="card" style="flex: 1">
+        <h3>Detections</h3>
+        <table id="detTable" style="display: none">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Conf</th>
+              <th>x1,y1</th>
+              <th>x2,y2</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="noDet" class="muted">No detections yet.</p>
+      </div>
+    </div>
+
+    <script>
+      const frm = document.getElementById("frm");
+      const statusEl = document.getElementById("status");
+      const imgEl = document.getElementById("preview");
+      const table = document.getElementById("detTable");
+      const tbody = table.querySelector("tbody");
+      const noDet = document.getElementById("noDet");
+
+      frm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        statusEl.textContent = "Uploading & detecting...";
+        table.style.display = "none";
+        noDet.style.display = "block";
+        imgEl.style.display = "none";
+
+        const fd = new FormData(frm);
+        const res = await fetch("/predict", { method: "POST", body: fd });
+        const j = await res.json();
+
+        if (!res.ok) {
+          statusEl.textContent = j.error || "Error";
+          return;
+        }
+
+        statusEl.textContent = "Done.";
+        // show annotated image
+        imgEl.src = j.image_url;
+        imgEl.style.display = "block";
+
+        // detections table
+        tbody.innerHTML = "";
+        if (j.detections && j.detections.length) {
+          j.detections.forEach((d) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${d.name}</td>
+                          <td>${(d.conf * 100).toFixed(1)}%</td>
+                          <td>(${d.x1.toFixed(0)}, ${d.y1.toFixed(0)})</td>
+                          <td>(${d.x2.toFixed(0)}, ${d.y2.toFixed(0)})</td>`;
+            tbody.appendChild(tr);
+          });
+          table.style.display = "table";
+          noDet.style.display = "none";
+        } else {
+          table.style.display = "none";
+          noDet.style.display = "block";
+          noDet.textContent = "No objects detected.";
+        }
+      });
+    </script>
+  </body>
+</html>
