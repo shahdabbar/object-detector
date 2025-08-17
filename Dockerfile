@@ -26,4 +26,4 @@ RUN mkdir -p static/outputs
 # Run the web server
 EXPOSE 8000
 ENV PYTHONPATH /app
-CMD python3 /app/app.py
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
