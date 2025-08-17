@@ -10,8 +10,18 @@ IMGZ = int(os.environ.get("IMG_SIZE", "640"))
 
 app = Flask(__name__)
 
-# Instantiate the detector once at startup
-detector = ObjectDetector(weights_path=WEIGHTS_PATH, conf=CONF, iou=IOU, imgsz=IMGZ)
+# # Instantiate the detector once at startup
+# detector = ObjectDetector(weights_path=WEIGHTS_PATH, conf=CONF, iou=IOU, imgsz=IMGZ)
+
+detector = None  # lazy-loaded detector
+
+@app.before_first_request
+def load_detector():
+    global detector
+    if detector is None:
+        print("Loading ObjectDetector...")
+        detector = ObjectDetector(weights_path=WEIGHTS_PATH, conf=CONF, iou=IOU, imgsz=IMGZ)
+        print("ObjectDetector loaded!")
 
 @app.route("/", methods=["GET"])
 def index():
